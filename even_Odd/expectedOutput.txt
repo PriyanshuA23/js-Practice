@@ -1,10 +1,12 @@
-input ---- output
-  2     |   is prime
-  3     |   is prime
-  4     |   is composite
-  5     |   is prime
-  6     |   is composite
-  7     |   is prime
-  8     |   is composite
-  9     |   is composite
-  10    |   is composite
+input   |   Expected output
+  1     |   1 is odd
+  2     |   2 is even
+  3     |   3 is odd
+  4     |   4 is even
+  5     |   5 is odd
+  6     |   6 is even
+  7     |   7 is odd
+  8     |   8 is even
+  9     |   9 is odd
+  10    |   10 is even
+  11    |   11 is odd 
