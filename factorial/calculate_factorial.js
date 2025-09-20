@@ -1,19 +1,10 @@
-const calculateFactorialOf = 4;
+const calculateFactorialOf = 6;
 let numberToOperate = calculateFactorialOf;
 let resultOfFactorial = 1;
 
-resultOfFactorial = resultOfFactorial * numberToOperate;
-numberToOperate--;
+for (; numberToOperate > 1; numberToOperate--) {
+    resultOfFactorial = resultOfFactorial * numberToOperate;
+}
 
-resultOfFactorial = resultOfFactorial * numberToOperate;
-numberToOperate--;
-
-resultOfFactorial = resultOfFactorial * numberToOperate;
-numberToOperate--;
-
-resultOfFactorial = resultOfFactorial * numberToOperate;
-numberToOperate--;
-
-
-console.log("factorial of",calculateFactorialOf,"is",resultOfFactorial);
+console.log("factorial of", calculateFactorialOf, "is", resultOfFactorial);
 
