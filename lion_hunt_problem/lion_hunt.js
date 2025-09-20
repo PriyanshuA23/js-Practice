@@ -8,8 +8,35 @@ const testCase6 = "L  ZL Z";
 const testCaseToUse = testCase1;
 
 const lion = "L";
-const Zebra = "Z";
+const zebra = "Z";
 
-let shortestSpace = 0;
+let previouShortestSpace = 1000;
+let currentAnimalFound = "";
+let previousAnimalFound = "No Animal";
+let spaceCounter = 0;
 
-console.log("Input:",testCase1," Output:",shortestSpace);
+for (let iterator = 0; iterator < testCaseToUse.length; iterator++) {
+
+    currentAnimalFound = "No Animal";
+
+    if ((testCaseToUse[iterator] === lion) || (testCaseToUse[iterator] === zebra)) {
+        currentAnimalFound = (testCaseToUse[iterator] === lion) ? "L" : "Z";
+
+        if(previousAnimalFound !== currentAnimalFound) {
+            if(previouShortestSpace > spaceCounter){
+                previouShortestSpace = spaceCounter;
+                
+            }
+        }
+       
+        previousAnimalFound = currentAnimalFound;
+        spaceCounter = 0;
+    }
+
+    if(currentAnimalFound === "No Animal") {
+        spaceCounter++;
+    }
+
+}
+
+console.log("Input:",testCaseToUse,"        Output:",previouShortestSpace);
