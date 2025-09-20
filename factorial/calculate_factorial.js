@@ -1,8 +1,19 @@
-const calculateFactorialOf = 2;
+const calculateFactorialOf = 4;
 let numberToOperate = calculateFactorialOf;
-let resultOfFactorial = 0;
+let resultOfFactorial = 1;
 
-resultOfFactorial = numberToOperate * (numberToOperate-1);
+resultOfFactorial = resultOfFactorial * numberToOperate;
+numberToOperate--;
+
+resultOfFactorial = resultOfFactorial * numberToOperate;
+numberToOperate--;
+
+resultOfFactorial = resultOfFactorial * numberToOperate;
+numberToOperate--;
+
+resultOfFactorial = resultOfFactorial * numberToOperate;
+numberToOperate--;
+
 
 console.log("factorial of",calculateFactorialOf,"is",resultOfFactorial);
 
