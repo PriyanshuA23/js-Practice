@@ -5,11 +5,12 @@ const testCase4 = "L     L";
 const testCase5 = "Z   Z   Z";
 const testCase6 = "L  ZL Z";
 
-const testCaseToUse = testCase1;
+const testCaseToUse = testCase6;
 
 const lion = "L";
 const zebra = "Z";
 
+const resultForNoMatch = -1;
 let previouShortestSpace = 1000;
 let currentAnimalFound = "";
 let previousAnimalFound = "No Animal";
@@ -22,7 +23,7 @@ for (let iterator = 0; iterator < testCaseToUse.length; iterator++) {
     if ((testCaseToUse[iterator] === lion) || (testCaseToUse[iterator] === zebra)) {
         currentAnimalFound = (testCaseToUse[iterator] === lion) ? "L" : "Z";
 
-        if(previousAnimalFound !== currentAnimalFound) {
+        if((previousAnimalFound !== currentAnimalFound) && (previousAnimalFound !== "No Animal")) {
             if(previouShortestSpace > spaceCounter){
                 previouShortestSpace = spaceCounter;
                 
@@ -32,11 +33,16 @@ for (let iterator = 0; iterator < testCaseToUse.length; iterator++) {
         previousAnimalFound = currentAnimalFound;
         spaceCounter = 0;
     }
-
+    
     if(currentAnimalFound === "No Animal") {
         spaceCounter++;
     }
 
 }
 
+if(previouShortestSpace === 1000) {
+    previouShortestSpace = resultForNoMatch;
+}
+
 console.log("Input:",testCaseToUse,"        Output:",previouShortestSpace);
+
