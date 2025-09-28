@@ -13,7 +13,26 @@ function isVowel(character) {
 }
 
 function shortestDistance(string) {
-  return 3;
+  let minimumDistance = string.length;
+  let currentDistance = 0;
+  let previousIndex = -1;
+
+  for (let index = 0; index < string.length; index++) {
+    if (isVowel(string[index])) {
+      if (previousIndex !== -1) {
+        currentDistance = index - previousIndex;
+
+        if (currentDistance < minimumDistance) {
+          minimumDistance = currentDistance;
+        }
+      }
+      
+      previousIndex = index;
+      
+    }
+  }
+
+  return minimumDistance;
 }
 
 function composeMessage(actualResult, expectedResult, isResultsEqual) {
