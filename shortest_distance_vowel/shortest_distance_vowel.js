@@ -1,3 +1,17 @@
+function isVowel(character) {
+ const vowel = character === 'a'
+    || character === 'e'
+    || character === 'i'
+    || character === 'o'
+    || character === 'u';
+  
+  if (vowel) {
+    return true;
+  }
+
+  return false;
+}
+
 function shortestDistance(string) {
   return 3;
 }
