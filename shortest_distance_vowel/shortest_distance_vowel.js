@@ -28,10 +28,14 @@ function shortestDistance(string) {
       }
       
       previousIndex = index;
-      
+
     }
   }
 
+  if (minimumDistance === string.length) {
+    return -1;
+  }
+  
   return minimumDistance;
 }
 
@@ -56,6 +60,8 @@ function testShortestDistanceVowel(string, expected) {
 
 function runAllTestCases() {
   testShortestDistanceVowel("hello", 3);
+  testShortestDistanceVowel("apple", 4);
+  testShortestDistanceVowel("strength", -1);
 }
 
 runAllTestCases();
