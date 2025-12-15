@@ -39,8 +39,17 @@ const displayScreen = (screen) => {
   );
 };
 
+const drawTails = (screen, snake) => {
+  snake.tails.toReversed().forEach((tail) => {
+    if (isInsideGrid(screen, tail)) {
+      screen[tail.y][tail.x] = tail.icon;
+    }
+  });
+};
+
 const updateScreen = (screen, snakes) => {
   for (const snake of snakes) {
+    drawTails(screen, snake);
     if (isInsideGrid(screen, snake)) {
       screen[snake.y][snake.x] = snake.icon;
     }
@@ -48,25 +57,33 @@ const updateScreen = (screen, snakes) => {
 };
 
 const move = (snake) => {
-  if (snake.direction === "N") {
-    snake.y--;
-  }
-  if (snake.direction === "S") {
-    snake.y++;
-  }
-  if (snake.direction === "E") {
-    snake.x++;
-  }
-  if (snake.direction === "W") {
-    snake.x--;
-  }
+  const movement = {
+    N: (snake) => snake.y--,
+    S: (snake) => snake.y++,
+    E: (snake) => snake.x++,
+    W: (snake) => snake.x--,
+  };
+
+  movement[snake.direction](snake);
 };
 
-const updateSnake = (screen, snakes, input) => {
+const updateTailCoordinates = (snake) => {
+  for (let index = snake.tails.length - 1; index > 0; index--) {
+    [snake.tails[index].x, snake.tails[index].y] = [
+      snake.tails[index - 1].x,
+      snake.tails[index - 1].y,
+    ];
+  }
+  [snake.tails[0].x, snake.tails[0].y] = [snake.x, snake.y];
+}
+
+const updateSnake = (snakes, input) => {
   for (const snake of snakes) {
     if (input === "L" || input === "R") {
       snake.direction = changeDirection[snake.direction][input];
     }
+
+    updateTailCoordinates(snake);
     move(snake);
   }
 };
@@ -77,6 +94,30 @@ const snakes = [
     y: 5,
     direction: "W",
     icon: "🐍",
+    tails: [
+      {
+        x: 5,
+        y: 5,
+        icon: "🟧",
+      },
+      {
+        x: 5,
+        y: 5,
+        icon: "🟨",
+      },
+
+      {
+        x: 5,
+        y: 5,
+        icon: "🟨",
+      },
+
+      {
+        x: 5,
+        y: 5,
+        icon: "🟨",
+      },
+    ],
   },
 ];
 
@@ -88,12 +129,13 @@ const startGame = (snakes, height = 10, width = 10) => {
   while (isInsideGrid(screen, snakes[0])) {
     const input = prompt("enter").toUpperCase();
     clearScreen(screen);
-    updateSnake(screen, snakes, input);
+    updateSnake(snakes, input);
     updateScreen(screen, snakes);
     displayScreen(screen);
   }
-  
+
   console.log("YOU LOOSE");
 };
 
 startGame(snakes);
+
