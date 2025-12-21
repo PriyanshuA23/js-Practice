@@ -1,3 +1,7 @@
+const dbg = (x) => {
+  console.log(x);
+};
+
 const changeDirection = {
   N: { L: "W", R: "E" },
   E: { L: "N", R: "S" },
@@ -47,8 +51,13 @@ const drawTails = (screen, snake) => {
   });
 };
 
+const drawFood = (screen, { x, y, icon }) => {
+  screen[y][x] = icon;
+};
+
 const updateScreen = (screen, snakes) => {
   for (const snake of snakes) {
+    drawFood(screen, snake.food);
     drawTails(screen, snake);
     if (isInsideGrid(screen, snake)) {
       screen[snake.y][snake.x] = snake.icon;
@@ -75,7 +84,7 @@ const updateTailCoordinates = (snake) => {
     ];
   }
   [snake.tails[0].x, snake.tails[0].y] = [snake.x, snake.y];
-}
+};
 
 const updateSnake = (snakes, input) => {
   for (const snake of snakes) {
@@ -100,42 +109,72 @@ const snakes = [
         y: 5,
         icon: "🟧",
       },
-      {
-        x: 5,
-        y: 5,
-        icon: "🟨",
-      },
-
-      {
-        x: 5,
-        y: 5,
-        icon: "🟨",
-      },
-
-      {
-        x: 5,
-        y: 5,
-        icon: "🟨",
-      },
     ],
+    food: {
+      x: 1,
+      y: 1,
+      icon: "🍔",
+    },
   },
 ];
 
-const startGame = (snakes, height = 10, width = 10) => {
+const generateRandomCoordinates = (height, width) => {
+  const xCoordinateOfFood = Math.floor(Math.random() * height);
+  const yCoordinateOfFood = Math.floor(Math.random() * width);
+
+  return [xCoordinateOfFood, yCoordinateOfFood];
+};
+
+const generateFoodCoordinate = (snake, height, width) => {
+  let isUniqueCoordinates = false;
+  let x = 0;
+  let y = 0;
+
+  while (!isUniqueCoordinates) {
+    [x, y] = generateRandomCoordinates(height, width);
+    isUniqueCoordinates = snake.tails.every((tail) => {
+      return (tail.x !== x) && (tail.y !== y);
+    });
+  }
+
+  snake.food.x = x;
+  snake.food.y = y;
+};
+
+const isFoodEaten = (snake) => {
+  return (snake.x === snake.food.x) && (snake.y === snake.food.y);
+};
+
+const createSnakeTail = (snake, size) => {
+  for (let index = 0; index <= size - 1; index++) {
+    const tail = { ...snake.tails[0] };
+    snake.tails.push(tail);
+  }
+};
+
+const startGame = (snakes, height = 10, width = 10, size = 2) => {
   const screen = createScreen(height, width);
+
+  createSnakeTail(snakes[0], size);
   updateScreen(screen, snakes);
   displayScreen(screen);
 
   while (isInsideGrid(screen, snakes[0])) {
     const input = prompt("enter").toUpperCase();
+
     clearScreen(screen);
     updateSnake(snakes, input);
+
+    if (isFoodEaten(snakes[0])) {
+      generateFoodCoordinate(snakes[0], height, width);
+      createSnakeTail(snakes[0], 1);
+    }
+
     updateScreen(screen, snakes);
-    displayScreen(screen);
+    displayScreen(screen, snakes);
   }
 
   console.log("YOU LOOSE");
 };
 
-startGame(snakes);
-
+startGame(snakes, ...Deno.args);
