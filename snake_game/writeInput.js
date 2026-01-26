@@ -1,5 +1,5 @@
 const writeInput = (input) => {
-  Deno.writeTextFileSync("./src/input.txt", input);
+  Deno.writeTextFileSync("input.txt", input);
 };
 
 while (true) {

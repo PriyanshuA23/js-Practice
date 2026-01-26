@@ -85,10 +85,10 @@ const updateTailCoordinates = (snake) => {
 const pauseSnake = () => {
   let input = "";
   while (input.toUpperCase() !== "P") {
-    input = Deno.readTextFileSync("./src/input.txt");
+    input = Deno.readTextFileSync("input.txt");
   }
 
-  Deno.writeTextFileSync("./src/input.txt", "");
+  Deno.writeTextFileSync("input.txt", "");
 };
 
 const updateSnake = (snakes, rawInput) => {
@@ -163,7 +163,7 @@ const createSnakeTail = (snake, size) => {
   }
 };
 
-const readAndClearFile = (path = "./src/input.txt") => {
+const readAndClearFile = (path = "input.txt") => {
   const input = Deno.readTextFileSync(path);
   Deno.writeTextFileSync(path, "");
 
