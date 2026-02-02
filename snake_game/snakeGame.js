@@ -1,3 +1,9 @@
+import { snakes } from "./snakeData.js";
+
+Deno.stdin.setRaw(true);
+
+let input = "m";
+
 const changeDirection = {
   N: { L: "W", R: "E" },
   E: { L: "N", R: "S" },
@@ -18,25 +24,27 @@ const isInsideGrid = (screen, { x, y }) => {
 const createScreen = (height, width) => {
   return Array.from(
     { length: height },
-    () => Array.from({ length: width }, () => "⬛"),
+    () => Array.from({ length: width }, () => "  "),
   );
 };
 
-const clearScreen = (screen) => {
-  for (const row in screen) {
-    for (const col in screen[row]) {
-      screen[row][col] = "⬛";
-    }
-  }
+const clearScreen = (screen, snake) => {
+  const tailLength = snake.tails.length;
+  const { x, y } = snake.tails[tailLength - 1];
+  screen[y][x] = "  ";
+  const foodX = snake.food.x;
+  const foodY = snake.food.y;
+  screen[foodY][foodX] = "  ";
 };
 
-const displayScreen = (screen) => {
+const displayScreen = (screen, snake) => {
   console.clear();
   const boundary = "**".repeat(screen[0].length).split("");
   const boundedScreen = [boundary, ...screen, boundary];
   console.log(
     boundedScreen.map((ele) => ["*", ...ele, "*"].join("")).join("\n"),
   );
+  console.log("SCORE: ", snake.score);
 };
 
 const drawTails = (screen, snake) => {
@@ -51,13 +59,11 @@ const drawFood = (screen, { x, y, icon }) => {
   screen[y][x] = icon;
 };
 
-const updateScreen = (screen, snakes) => {
-  for (const snake of snakes) {
-    drawFood(screen, snake.food);
-    drawTails(screen, snake);
-    if (isInsideGrid(screen, snake)) {
-      screen[snake.y][snake.x] = snake.icon;
-    }
+const updateScreen = (screen, snake) => {
+  drawFood(screen, snake.food);
+  drawTails(screen, snake);
+  if (isInsideGrid(screen, snake)) {
+    screen[snake.y][snake.x] = snake.icon;
   }
 };
 
@@ -82,52 +88,21 @@ const updateTailCoordinates = (snake) => {
   [snake.tails[0].x, snake.tails[0].y] = [snake.x, snake.y];
 };
 
-const pauseSnake = () => {
-  let input = "";
-  while (input.toUpperCase() !== "P") {
-    input = Deno.readTextFileSync("input.txt");
-  }
+const updateSnake = (snake, rawInput) => {
+  const input = rawInput;
 
-  Deno.writeTextFileSync("input.txt", "");
-};
-
-const updateSnake = (snakes, rawInput) => {
-  const input = rawInput.toUpperCase();
-
-  if (input === "P") pauseSnake();
+  if (input === "p") snake.isPause = !snake.isPause;
   else {
-    for (const snake of snakes) {
-      if (input === "L" || input === "R") {
-        snake.direction = changeDirection[snake.direction][input];
-      }
+    if (input === "l" || input === "r") {
+      snake.direction = changeDirection[snake.direction][input.toUpperCase()];
+    }
 
+    if (!snake.isPause) {
       updateTailCoordinates(snake);
       move(snake);
     }
   }
 };
-
-const snakes = [
-  {
-    x: 5,
-    y: 5,
-    direction: "W",
-    icon: "🐍",
-    tails: [
-      {
-        x: 5,
-        y: 5,
-        icon: "🟩",
-      },
-    ],
-    food: {
-      x: 1,
-      y: 1,
-      icon: "🍔",
-    },
-    score: 0,
-  },
-];
 
 const generateRandomCoordinates = (height, width) => {
   const xCoordinateOfFood = Math.floor(Math.random() * height);
@@ -163,41 +138,62 @@ const createSnakeTail = (snake, size) => {
   }
 };
 
-const readAndClearFile = (path = "input.txt") => {
-  const input = Deno.readTextFileSync(path);
-  Deno.writeTextFileSync(path, "");
-
-  return input;
+export const readFromStream = async (snake) => {
+  for await (const chunk of Deno.stdin.readable) {
+    input = new TextDecoder().decode(chunk).trim();
+    if (snake.isDead) {
+      return;
+    }
+    if (input === "p") snakes[0].isPause;
+  }
 };
 
-const startGame = (snakes, h = 10, w = 10, speed = 200, size = 2) => {
+const delay = (time) => {
+  return new Promise((res) => {
+    setTimeout(() => res(), time);
+  });
+};
+
+const performIfFoodEaten = (snake, h, w) => {
+  if (isFoodEaten(snake)) {
+    snake.score += 10;
+    generateFoodCoordinate(snake, h, w);
+    createSnakeTail(snake, 1);
+  }
+};
+
+const performIfSnakeOnBoundary = (screen, snake) => {
+  if (!isInsideGrid(screen, snake)) {
+    console.log("GAME OVER");
+    console.log("FINAL SCORE: ", snake.score);
+    snake.isDead = true;
+  }
+};
+
+const performAction = async (args) => {
+  const { snake, screen, h, w, t } = args;
+  clearScreen(screen, snake);
+  updateSnake(snake, input);
+  performIfFoodEaten(snake, h, w);
+  updateScreen(screen, snake);
+  displayScreen(screen, snake);
+  performIfSnakeOnBoundary(screen, snake);
+  input = "";
+  await delay(t);
+};
+
+export const startGame = async (snakes, h = 10, w = 10, t = 1000, s = 2) => {
   const screen = createScreen(h, w);
-
-  createSnakeTail(snakes[0], size);
-  updateScreen(screen, snakes);
-  displayScreen(screen);
-
-  const timeOutID = setInterval(() => {
-    const input = readAndClearFile();
-
-    clearScreen(screen);
-    updateSnake(snakes, input);
-
-    if (isFoodEaten(snakes[0])) {
-      snakes[0].score += 10;
-      generateFoodCoordinate(snakes[0], h, w);
-      createSnakeTail(snakes[0], 1);
+  createSnakeTail(snakes[0], s);
+  readFromStream(snakes[0]);
+  while (true) {
+    const args = { snake: snakes[0], screen, h, w, t };
+    await performAction(args);
+    if (snakes[0].isDead) {
+      Deno.exit(0);
+      break;
     }
-
-    updateScreen(screen, snakes);
-    displayScreen(screen, snakes);
-
-    if (!isInsideGrid(screen, snakes[0])) {
-      clearInterval(timeOutID);
-      console.log("GAME OVER");
-      console.log("FINAL SCORE: ", snakes[0].score);
-    }
-  }, speed);
+  }
 };
 
-startGame(snakes, ...Deno.args);
+await startGame(snakes, ...Deno.args);
