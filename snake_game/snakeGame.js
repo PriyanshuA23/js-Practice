@@ -5,10 +5,10 @@ Deno.stdin.setRaw(true);
 let input = "m";
 
 const changeDirection = {
-  N: { L: "W", R: "E" },
-  E: { L: "N", R: "S" },
-  W: { L: "S", R: "N" },
-  S: { L: "W", R: "E" },
+  N: { W: "N", A: "W", S: "N", D: "E" },
+  E: { W: "N", A: "E", S: "S", D: "E" },
+  W: { W: "N", A: "W", S: "S", D: "W" },
+  S: { W: "S", A: "W", S: "S", D: "E" },
 };
 
 function isBetween(value, min, max) {
@@ -44,7 +44,12 @@ const displayScreen = (screen, snake) => {
   console.log(
     boundedScreen.map((ele) => ["*", ...ele, "*"].join("")).join("\n"),
   );
-  console.log("SCORE: ", snake.score);
+  if (snake.isDead) {
+    console.log("GAME OVER");
+    console.log("FINAL SCORE: ", snake.score);
+  } else {
+    console.log("SCORE: ", snake.score);
+  }
 };
 
 const drawTails = (screen, snake) => {
@@ -93,7 +98,8 @@ const updateSnake = (snake, rawInput) => {
 
   if (input === "p") snake.isPause = !snake.isPause;
   else {
-    if (input === "l" || input === "r") {
+    const inputs = ["w", "a", "s", "d"];
+    if (inputs.includes(input)) {
       snake.direction = changeDirection[snake.direction][input.toUpperCase()];
     }
 
@@ -162,10 +168,21 @@ const performIfFoodEaten = (snake, h, w) => {
   }
 };
 
+const isSnakeBiteItself = (snake) => {
+  const lengthOfTail = snake.tails.length;
+  for (let index = lengthOfTail - 1; index > 0; index--) {
+    const condition = (snake.x === snake.tails[index].x) &&
+      (snake.y === snake.tails[index].y);
+    if (condition) {
+      return true;
+    }
+  }
+};
+
 const performIfSnakeOnBoundary = (screen, snake) => {
-  if (!isInsideGrid(screen, snake)) {
-    console.log("GAME OVER");
-    console.log("FINAL SCORE: ", snake.score);
+  const condition = !isInsideGrid(screen, snake) ||
+    isSnakeBiteItself(snake);
+  if (condition) {
     snake.isDead = true;
   }
 };
@@ -176,8 +193,8 @@ const performAction = async (args) => {
   updateSnake(snake, input);
   performIfFoodEaten(snake, h, w);
   updateScreen(screen, snake);
-  displayScreen(screen, snake);
   performIfSnakeOnBoundary(screen, snake);
+  displayScreen(screen, snake);
   input = "";
   await delay(t);
 };
