@@ -1,16 +1,17 @@
-export const snakes = [
+export const SNAKES = [
   {
     x: 5,
     y: 5,
-    direction: "W",
+    heading: "W",
     icon: "🐍",
-    tails: [
+    bodyParts: [
       {
         x: 5,
         y: 5,
         icon: "🟩",
       },
     ],
+
     food: {
       x: 1,
       y: 1,
