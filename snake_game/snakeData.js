@@ -15,7 +15,7 @@ export const SNAKES = [
     food: {
       x: 1,
       y: 1,
-      icon: "🐁",
+      icon: "🍔",
     },
     score: 0,
     isPause: false,
