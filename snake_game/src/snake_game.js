@@ -1,19 +1,24 @@
-import { isInsideGrid } from "./utils/boundary_checker.js";
-import { delay } from "./utils/delay.js";
+import { SNAKES } from "./snakeData.js";
+import { isInsideGrid } from "../utils/boundary_checker.js";
+import { delay } from "../utils/delay.js";
 import {
   clearScreen,
   createScreen,
   displayScreen,
-} from "./utils/screen_setup.js";
+} from "../utils/screen_setup.js";
 
-import { SNAKES } from "./snakeData.js";
 Deno.stdin.setRaw(true);
 
-let HEIGHT = 10;
-let WIDTH = 10;
 let INPUT_BUFF = "m";
 const VALID_KEYSTROKES = ["w", "a", "s", "d"];
 const MOVMENT = { //cleanup and value return
+  N: (snake, { w }) => snake.y = ((snake.y - 1) % w + w) % w,
+  S: (snake, { w }) => snake.y = (snake.y + 1) % w,
+  E: (snake, { h }) => snake.x = (snake.x + 1) % h,
+  W: (snake, { h }) => snake.x = ((snake.x - 1) % h + h) % h,
+};
+
+const BOUNDED_MOVEMENT = {
   N: (snake) => snake.y--,
   S: (snake) => snake.y++,
   E: (snake) => snake.x++,
@@ -36,9 +41,6 @@ const drawBody = ({ width, height, pixels }, { bodyParts }) => {
 };
 
 const drawFood = ({ pixels }, { x, y, icon }) => {
-  console.log("inside draw food");
-
-  console.log(y, x, icon);
   pixels[y][x] = icon;
 };
 
@@ -50,7 +52,12 @@ const updateScreen = (screen, snake) => {
   }
 };
 
-const move = (snake) => MOVMENT[snake.heading](snake);
+const move = (snake, dimensions) => {
+  if (snake.isBounded) {
+    return BOUNDED_MOVEMENT[snake.heading](snake);
+  }
+  MOVMENT[snake.heading](snake, dimensions);
+};
 
 const updateBodyCoordinates = ({ bodyParts, x, y }) => {
   for (let i = bodyParts.length - 1; i > 0; i--) {
@@ -59,16 +66,11 @@ const updateBodyCoordinates = ({ bodyParts, x, y }) => {
     [curr.x, curr.y] = [prev.x, prev.y];
   }
 
-  // bodyParts.toReversed().reduce((prev, curr, i) => {
-  //   [curr.x, curr.y] = [prev.x, prev.y];
-  //   return bodyParts[i];
-  // });
-
   const neck = bodyParts[0];
   [neck.x, neck.y] = [x, y];
 };
 
-const updateSnake = (snake, input) => {
+const updateSnake = (snake, input, dimensions) => {
   if (input === "p") {
     snake.isPause = !snake.isPause;
     return;
@@ -80,7 +82,7 @@ const updateSnake = (snake, input) => {
 
   if (!snake.isPause) {
     updateBodyCoordinates(snake);
-    move(snake);
+    move(snake, dimensions);
   }
 };
 
@@ -91,33 +93,17 @@ const generateRandomCoordinates = (height, width) => {
   return [foodX, foodY];
 };
 
-// const generateFoodCoordinate = (snake, height, width) => {
-//   let isUniquePair = false;
-
-//   while (!isUniquePair) {
-//     const [x, y] = generateRandomCoordinates(height, width);
-//     isUniquePair = snake
-//       .bodyParts
-//       .every((part) => (part.x !== x) && (part.y !== y));
-//     snake.food.x = x;
-//     snake.food.y = y;
-//   }
-// };
-
 const generateFoodCoordinate = (snake, height, width) => {
-  let isUniqueCoordinates = false;
-  let x = 0;
-  let y = 0;
+  let isUniquePair = false;
 
-  while (!isUniqueCoordinates) {
-    [x, y] = generateRandomCoordinates(height, width);
-    isUniqueCoordinates = snake.bodyParts.every((part) => {
-      return (part.x !== x) && (part.y !== y);
-    });
+  while (!isUniquePair) {
+    const [x, y] = generateRandomCoordinates(height, width);
+    isUniquePair = snake
+      .bodyParts
+      .every((part) => (part.x !== x) && (part.y !== y));
+    snake.food.x = x;
+    snake.food.y = y;
   }
-
-  snake.food.x = x;
-  snake.food.y = y;
 };
 
 const isFoodEaten = (snake) => {
@@ -158,11 +144,13 @@ const isSnakeBiteItself = (snake) => {
       return true;
     }
   }
+  return false;
 };
 
-const performIfSnakeOnBoundary = (screen, snake) => {
-  const condition = !isInsideGrid(screen, snake) ||
-    isSnakeBiteItself(snake);
+const checkIsSnakeDead = (screen, snake) => {
+  const condition = snake.isBounded
+    ? (!isInsideGrid(screen, snake) || isSnakeBiteItself(snake))
+    : isSnakeBiteItself(snake);
   if (condition) {
     snake.isDead = true;
   }
@@ -171,29 +159,29 @@ const performIfSnakeOnBoundary = (screen, snake) => {
 const performAction = async (args) => {
   const { snake, screen, h, w, t } = args;
   clearScreen(screen, snake);
-  updateSnake(snake, INPUT_BUFF);
+  updateSnake(snake, INPUT_BUFF, { h, w });
   performIfFoodEaten(snake, h, w);
   updateScreen(screen, snake);
-  performIfSnakeOnBoundary(screen, snake);
+  checkIsSnakeDead(screen, snake);
   displayScreen(screen, snake);
   INPUT_BUFF = "";
   await delay(t);
 };
 
-const setWidthHeight = (h, w) => {
-  if (h && w) {
-    HEIGHT = h;
-    WIDTH = w;
-  }
-};
-
-export const startGame = async (snakes, h, w, time = 300, s = 2) => {
+export const startGame = async (snakes, h, w, time = 300, s = 2, b) => {
   const snake = snakes[0];
   createSnakeTail(snake, s);
   readInput(snake);
-  setWidthHeight(h, w);
-  const SCREEN = createScreen(HEIGHT, WIDTH);
+  h = +h;
+  w = +w;
+  const SCREEN = createScreen(h, w);
+  if (b === "false") {
+    snake.isBounded = false;
+  }
   while (true) {
+    console.log("x", snake.x, "y", snake.y);
+    console.log(h, w);
+
     const args = { snake, screen: SCREEN, h, w, t: time };
     await performAction(args);
     if (snake.isDead) {

@@ -2,7 +2,7 @@ export const SNAKES = [
   {
     x: 5,
     y: 5,
-    heading: "W",
+    heading: "E",
     icon: "🐍",
     bodyParts: [
       {
@@ -20,5 +20,6 @@ export const SNAKES = [
     score: 0,
     isPause: false,
     isDead: false,
+    isBounded: true,
   },
 ];
