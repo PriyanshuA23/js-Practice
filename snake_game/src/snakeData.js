@@ -21,5 +21,6 @@ export const SNAKES = [
     isPause: false,
     isDead: false,
     isBounded: true,
+    delayTime: 500,
   },
 ];

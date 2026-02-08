@@ -31,7 +31,8 @@ const displayStatus = ({ isDead, score }) => {
     return;
   }
 
-  console.log("SCORE: ", score);
+  console.log("SCORE: ", score, "\n");
+  console.log("w: up    a: left   s: down   d: right    p: pause");
 };
 
 export const displayScreen = (screen, snake) => {

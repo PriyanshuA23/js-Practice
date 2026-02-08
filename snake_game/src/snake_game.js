@@ -7,8 +7,6 @@ import {
   displayScreen,
 } from "../utils/screen_setup.js";
 
-Deno.stdin.setRaw(true);
-
 let INPUT_BUFF = "m";
 const VALID_KEYSTROKES = ["w", "a", "s", "d"];
 const MOVMENT = { //cleanup and value return
@@ -157,7 +155,7 @@ const checkIsSnakeDead = (screen, snake) => {
 };
 
 const performAction = async (args) => {
-  const { snake, screen, h, w, t } = args;
+  const { snake, screen, h, w } = args;
   clearScreen(screen, snake);
   updateSnake(snake, INPUT_BUFF, { h, w });
   performIfFoodEaten(snake, h, w);
@@ -165,11 +163,11 @@ const performAction = async (args) => {
   checkIsSnakeDead(screen, snake);
   displayScreen(screen, snake);
   INPUT_BUFF = "";
-  await delay(t);
+  await delay(snake.delayTime);
 };
 
-export const startGame = async (snakes, h, w, time = 300, s = 2, b) => {
-  const snake = snakes[0];
+export const startGame = async (snake, h = 10, w = 10, s = 2, b) => {
+  Deno.stdin.setRaw(true);
   createSnakeTail(snake, s);
   readInput(snake);
   h = +h;
@@ -179,15 +177,12 @@ export const startGame = async (snakes, h, w, time = 300, s = 2, b) => {
     snake.isBounded = false;
   }
   while (true) {
-    console.log("x", snake.x, "y", snake.y);
-    console.log(h, w);
-
-    const args = { snake, screen: SCREEN, h, w, t: time };
+    const args = { snake, screen: SCREEN, h, w };
     await performAction(args);
     if (snake.isDead) {
-      Deno.exit(0);
+      throw new Error("snake is Dead");
     }
   }
 };
 
-await startGame(SNAKES, ...Deno.args);
+// await startGame(SNAKES[0], ...Deno.args);
