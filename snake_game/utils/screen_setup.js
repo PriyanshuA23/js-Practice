@@ -9,10 +9,9 @@ export const createScreen = (height, width) => ({
   ),
 });
 
-export const clearScreen = (screen, { bodyParts, food }) => {
+export const clearScreen = (screen, { bodyParts }) => {
   const { x, y } = bodyParts.at(-1);
   screen.pixels[y][x] = EMPTY_CELL;
-  screen.pixels[food.y][food.x] = EMPTY_CELL;
 };
 
 const drawScreen = (screen) => {
@@ -32,7 +31,7 @@ const displayStatus = ({ isDead, score }) => {
   }
 
   console.log("SCORE: ", score, "\n");
-  console.log("w: up    a: left   s: down   d: right    p: pause");
+  console.log("⬆️: up   ⬅️: left   ⬇️: down   ➡️: right   𝗣: pause");
 };
 
 export const displayScreen = (screen, snake) => {

@@ -13,14 +13,14 @@ export const SNAKES = [
     ],
 
     food: {
-      x: 1,
-      y: 1,
+      x: 8,
+      y: 5,
       icon: "🍔",
     },
     score: 0,
     isPause: false,
     isDead: false,
     isBounded: true,
-    delayTime: 500,
+    delayTime: 100,
   },
 ];

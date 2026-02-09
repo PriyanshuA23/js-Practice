@@ -1,6 +1,5 @@
 import { select, Separator } from "@inquirer/prompts";
 import { startGame } from "../src/snake_game.js";
-// import { SNAKES } from "../src/snakeData.js";
 import { configureOptions } from "./settings_interface.js";
 
 const extractUserInput = async () => {
@@ -46,12 +45,6 @@ const OPERATIONS = {
 export const userInterface = async (snake) => {
   while (true) {
     const input = await extractUserInput();
-    try {
-      await OPERATIONS[input](snake, 30, 30);
-    } catch {
-      return;
-    }
+    await OPERATIONS[input](snake, 30, 30);
   }
 };
-
-// await userInterface(SNAKES[0]);
