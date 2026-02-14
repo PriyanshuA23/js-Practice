@@ -1,4 +1,3 @@
-import { SNAKES } from "./snakeData.js";
 import { isInsideGrid } from "../utils/boundary_checker.js";
 import { delay } from "../utils/delay.js";
 import {
@@ -8,14 +7,16 @@ import {
 } from "../utils/screen_setup.js";
 
 let INPUT_BUFF = "m";
-// const VALID_KEYSTROKES = ["w", "a", "s", "d"];
+
 const VALID_KEYSTROKES = ["\u001b[A", "\u001b[B", "\u001b[C", "\u001b[D"];
+
 const MOVMENT = { //cleanup and value return
   N: (snake, { w }) => snake.y = ((snake.y - 1) % w + w) % w,
   S: (snake, { w }) => snake.y = (snake.y + 1) % w,
   E: (snake, { h }) => snake.x = (snake.x + 1) % h,
   W: (snake, { h }) => snake.x = ((snake.x - 1) % h + h) % h,
 };
+
 const BOUNDED_MOVEMENT = {
   N: (snake) => snake.y--,
   S: (snake) => snake.y++,
@@ -29,12 +30,6 @@ export const changeheading = {
   W: { "\u001b[A": "N", "\u001b[D": "W", "\u001b[B": "S", "\u001b[C": "W" },
   S: { "\u001b[A": "S", "\u001b[D": "W", "\u001b[B": "S", "\u001b[C": "E" },
 };
-// export const changeheading = {
-//   N: { W: "N", A: "W", S: "N", D: "E" },
-//   E: { W: "N", A: "E", S: "S", D: "E" },
-//   W: { W: "N", A: "W", S: "S", D: "W" },
-//   S: { W: "S", A: "W", S: "S", D: "E" },
-// };
 
 const drawBody = ({ width, height, pixels }, { bodyParts }) => {
   bodyParts
@@ -113,17 +108,13 @@ const createSnakeTail = (snake) => {
 export const readInput = async (snake) => {
   for await (const chunk of Deno.stdin.readable) {
     INPUT_BUFF = new TextDecoder().decode(chunk).trim();
-    if (snake.isDead) {
-      return;
-    }
-    if (INPUT_BUFF === "p") SNAKES[0].isPause;
+    if (INPUT_BUFF === "p") snake.isPause;
   }
 };
 
 const performIfFoodEaten = (snake, h, w) => {
   if (isFoodEaten(snake)) {
     snake.score += 10;
-
     generateFoodCoordinate(snake, h, w);
     createSnakeTail(snake, 1);
   }
@@ -156,7 +147,6 @@ const performAction = async ({ snake, screen, h, w }) => {
   performIfFoodEaten(snake, h, w);
   updateScreen(screen, snake);
   checkIsSnakeDead(screen, snake);
-  if (snake.isDead) return;
   displayScreen(screen, snake);
   INPUT_BUFF = "";
   await delay(snake.delayTime);

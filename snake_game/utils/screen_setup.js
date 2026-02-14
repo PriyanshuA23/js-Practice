@@ -35,6 +35,7 @@ const displayStatus = ({ isDead, score }) => {
 };
 
 export const displayScreen = (screen, snake) => {
+  if (snake.isDead) return;
   drawScreen(screen);
   displayStatus(snake);
 };
